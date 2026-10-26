@@ -190,7 +190,7 @@ textarea { min-height: 120px; resize: vertical; }
 .checkout-grid { display: grid; gap: 24px; }
 .checkout-card { padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: white; box-shadow: var(--shadow-sm); }
 .upi-card { text-align: center; background: var(--cream); }
-.upi-card img { width: min(230px, 100%); margin: 18px auto; border: 10px solid white; border-radius: var(--radius); }
+.upi-card img { width: min(360px, 100%); margin: 18px auto; border: 8px solid white; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 .upi-id { display: inline-block; padding: 8px 14px; border: 1px dashed var(--gold); border-radius: 7px; color: var(--maroon); background: white; font-weight: 800; }
 .notice { padding: 14px 16px; border-left: 3px solid var(--maroon); border-radius: 6px; color: #405045; background: #eef2eb; font-size: .88rem; }
 .stock-status { display: inline-flex; margin: 0 0 10px; padding: 5px 10px; border-radius: 999px; font-size: .8rem; font-weight: 800; }
