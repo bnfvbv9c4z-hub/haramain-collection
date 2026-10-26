@@ -17,6 +17,7 @@ The website is built with plain HTML, CSS and JavaScript. It does not require np
 
 ```text
 index.html          Home page
+admin.html          Private product and stock dashboard
 shop.html           Product catalogue
 product.html        Dynamic product details
 cart.html           Cart and WhatsApp checkout
@@ -26,8 +27,16 @@ policies.html       Shipping, returns and privacy information
 css/style.css       Website styling
 js/products.js      Product catalogue data
 js/main.js          Navigation, cart and page functionality
+js/admin.js         Supabase admin and image upload functionality
+supabase/schema.sql Database tables, storage and security rules
 images/             Logo, icons and placeholder artwork
 ```
+
+## Product dashboard
+
+The store is connected to Supabase for products, images, categories, prices and stock quantities. Open `/admin.html` and sign in with the approved owner account. Quantity `0` automatically displays **Out of stock** and disables cart ordering for that item.
+
+See `BACKEND_SETUP.md` for the one-time connection and recovery steps. Never commit a Supabase service-role key; the browser configuration uses only the public publishable key.
 
 ## Preview locally
 
@@ -41,7 +50,7 @@ Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in a browser.
 
 ## Editing products
 
-Open `js/products.js`. Each product is one item in the `products` array. Copy an existing item, give it a unique ID and update its name, category, price, image, description and other details.
+Use `admin.html` for normal product and inventory updates. `js/products.js` is the safe fallback catalogue used only if the backend is temporarily unavailable.
 
 ## Before accepting real orders
 
@@ -52,5 +61,5 @@ Open `js/products.js`. Each product is one item in the `products` array. Copy an
 
 ## Deployment
 
-This repository can be published directly with GitHub Pages because the site is completely static.
+This repository is deployed on Netlify. Pushing to the connected GitHub repository triggers a new deployment automatically.
 

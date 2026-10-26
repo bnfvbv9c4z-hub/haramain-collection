@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store Admin | Haramain Collection</title>
+  <meta name="description" content="Private product and inventory dashboard for Haramain Collection.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#718C72">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="js/supabase-config.js"></script>
+  <script defer src="js/products.js"></script>
+  <script defer src="js/admin.js"></script>
+</head>
+<body class="admin-body">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <a class="brand" href="index.html"><img class="brand-logo" src="images/haramain-logo.png" alt=""><span>Haramain Collection</span></a>
+      <div class="admin-header__actions"><a class="button button--secondary" href="shop.html" target="_blank" rel="noopener">View live shop</a><button class="text-button" type="button" data-admin-signout hidden>Sign out</button></div>
+    </header>
+
+    <section class="admin-setup" data-admin-setup hidden>
+      <p class="eyebrow">One-time setup</p>
+      <h1>Connect your Supabase project</h1>
+      <p>The dashboard is ready. Follow <a class="text-link" href="BACKEND_SETUP.md">BACKEND_SETUP.md</a>, then refresh this page.</p>
+    </section>
+
+    <section class="admin-login" data-admin-login hidden>
+      <div class="admin-login__card">
+        <p class="eyebrow">Private dashboard</p>
+        <h1>Admin sign in</h1>
+        <p>Use the owner email and password created in Supabase.</p>
+        <form data-login-form>
+          <div class="form-group"><label for="admin-email">Email</label><input id="admin-email" name="email" type="email" autocomplete="username" required></div>
+          <div class="form-group"><label for="admin-password">Password</label><input id="admin-password" name="password" type="password" autocomplete="current-password" required></div>
+          <button class="button button--full" type="submit">Sign in</button>
+          <p class="form-message" data-login-message role="status"></p>
+        </form>
+      </div>
+    </section>
+
+    <section data-admin-dashboard hidden>
+      <div class="admin-title-row"><div><p class="eyebrow">Store control</p><h1>Products & inventory</h1><p>Add products, upload photos and keep stock accurate.</p></div><button class="button" type="button" data-new-product>+ Add product</button></div>
+
+      <div class="admin-stats" aria-label="Inventory summary">
+        <article><span>Total products</span><strong data-stat-total>0</strong></article>
+        <article><span>Low stock (1–5)</span><strong data-stat-low>0</strong></article>
+        <article><span>Out of stock</span><strong data-stat-out>0</strong></article>
+      </div>
+
+      <div class="admin-workspace">
+        <section class="admin-panel admin-editor" data-editor-panel>
+          <div class="admin-panel__heading"><div><p class="eyebrow">Product details</p><h2 data-editor-title>Add a new product</h2></div><button class="text-button" type="button" data-cancel-edit hidden>Cancel edit</button></div>
+          <form data-product-form>
+            <input type="hidden" name="id">
+            <input type="hidden" name="current_image_url">
+            <div class="form-grid">
+              <div class="form-group"><label for="product-name">Product name *</label><input id="product-name" name="name" required></div>
+              <div class="form-group"><label for="product-category">Category *</label><input id="product-category" name="category" list="category-options" required><datalist id="category-options"><option value="Oud Daan"><option value="Islamic Décor"><option value="Quran & Gifts"><option value="Hajj & Umrah"><option value="Attar & Perfume"><option value="Zamzam Bottles"></datalist></div>
+              <div class="form-group"><label for="product-price">Selling price (₹) *</label><input id="product-price" name="price" type="number" min="0" step="1" inputmode="numeric" required></div>
+              <div class="form-group"><label for="product-old-price">Original price (₹)</label><input id="product-old-price" name="old_price" type="number" min="0" step="1" inputmode="numeric"></div>
+              <div class="form-group"><label for="product-quantity">Quantity in stock *</label><input id="product-quantity" name="quantity" type="number" min="0" step="1" inputmode="numeric" required></div>
+              <div class="form-group"><label for="product-badge">Badge</label><input id="product-badge" name="badge" placeholder="Bestseller, New, Premium..."></div>
+            </div>
+            <div class="form-group"><label for="product-description">Description *</label><textarea id="product-description" name="description" required></textarea></div>
+            <div class="form-group"><label for="product-details">Key details</label><textarea id="product-details" name="details" placeholder="Write one detail per line"></textarea></div>
+            <div class="form-group"><label for="product-alt">Photo description</label><input id="product-alt" name="alt_text" placeholder="Example: Gold electric oud burner"></div>
+            <div class="form-group"><label for="product-image">Product photo</label><input id="product-image" name="image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP. Maximum 5 MB.</small><img class="admin-image-preview" data-image-preview alt="Selected product preview" hidden></div>
+            <div class="admin-checks"><label><input name="featured" type="checkbox"> Show in Featured Products</label><label><input name="active" type="checkbox" checked> Visible in shop</label></div>
+            <button class="button button--full" type="submit" data-save-product>Save product</button>
+            <p class="form-message" data-product-message role="status"></p>
+          </form>
+        </section>
+
+        <section class="admin-panel">
+          <div class="admin-panel__heading"><div><p class="eyebrow">Current catalogue</p><h2>Your products</h2></div><input class="admin-search" type="search" placeholder="Search products" aria-label="Search products" data-admin-search></div>
+          <button class="button button--secondary button--full" type="button" data-import-products hidden>Import the 12 current products</button>
+          <div class="admin-product-list" data-admin-products><p>Loading products…</p></div>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -6,11 +6,12 @@ const STORE = {
   cartKey: "haramainCollectionCart"
 };
 
-const catalogue = window.HARAMAIN_PRODUCTS || [];
+let catalogue = window.HARAMAIN_PRODUCTS || [];
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   setupMobileMenu();
   updateCartBadges();
+  if (window.getHaramainProducts) catalogue = await window.getHaramainProducts();
   renderFeaturedProducts();
   setupShop();
   renderProductPage();
@@ -50,13 +51,22 @@ function findProduct(id) {
 function addToCart(id, quantity = 1) {
   const product = findProduct(id);
   if (!product) return;
+  if (product.quantity <= 0) {
+    showToast(`${product.name} is currently out of stock`);
+    return;
+  }
 
   const cart = getCart();
   const existing = cart.find(item => item.id === product.id);
-  if (existing) existing.quantity += Number(quantity);
-  else cart.push({ id: product.id, quantity: Number(quantity) });
+  const requested = Number(quantity);
+  const current = existing ? existing.quantity : 0;
+  const newQuantity = Math.min(current + requested, product.quantity);
+  if (existing) existing.quantity = newQuantity;
+  else cart.push({ id: product.id, quantity: newQuantity });
   saveCart(cart);
-  showToast(`${product.name} cart mein add ho gaya`);
+  showToast(newQuantity < current + requested
+    ? `Only ${product.quantity} available — cart quantity adjusted`
+    : `${product.name} added to cart`);
 }
 
 function updateCartBadges() {
@@ -86,17 +96,18 @@ function productCard(product) {
     ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>`
     : "";
 
+  const inStock = product.quantity > 0;
   return `
     <article class="product-card">
       <a class="product-card__image" href="product.html?id=${product.id}" aria-label="View ${product.name}">
         <img src="${product.image}" alt="${product.alt}" loading="lazy">
-        ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ""}
+        ${product.badge || !inStock ? `<span class="product-badge">${inStock ? product.badge : "Out of stock"}</span>` : ""}
       </a>
       <div class="product-card__body">
         <p class="eyebrow">${product.category}</p>
         <h3><a href="product.html?id=${product.id}">${product.name}</a></h3>
         <div class="price-row"><strong>${formatPrice(product.price)}</strong>${oldPrice}</div>
-        <button class="button button--secondary button--full" type="button" data-add-to-cart="${product.id}">Add to cart</button>
+        <button class="button button--secondary button--full" type="button" data-add-to-cart="${product.id}" ${inStock ? "" : "disabled"}>${inStock ? "Add to cart" : "Out of stock"}</button>
       </div>
     </article>`;
 }
@@ -208,6 +219,8 @@ function renderProductPage() {
   const descriptionMeta = document.querySelector('meta[name="description"]');
   if (descriptionMeta) descriptionMeta.content = product.description;
 
+  const inStock = product.quantity > 0;
+  const maxOrderQuantity = Math.min(product.quantity, 10);
   container.innerHTML = `
     <div class="product-detail__media">
       <span class="product-badge">${product.badge || product.category}</span>
@@ -217,18 +230,20 @@ function renderProductPage() {
       <p class="eyebrow">${product.category}</p>
       <h1>${product.name}</h1>
       <div class="product-detail__price">${formatPrice(product.price)} ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : ""}</div>
+      <p class="stock-status ${inStock ? "is-in-stock" : "is-out-of-stock"}">${inStock ? `${product.quantity} in stock` : "Currently out of stock"}</p>
       <p class="lead">${product.description}</p>
       <ul class="tick-list">${product.details.map(item => `<li>${item}</li>`).join("")}</ul>
-      <div class="quantity-add">
+      <div class="quantity-add" ${inStock ? "" : "hidden"}>
         <label for="product-quantity">Qty</label>
-        <select id="product-quantity" aria-label="Select quantity">${[1,2,3,4,5].map(value => `<option>${value}</option>`).join("")}</select>
+        <select id="product-quantity" aria-label="Select quantity">${Array.from({length: maxOrderQuantity}, (_, index) => `<option>${index + 1}</option>`).join("")}</select>
         <button class="button" type="button" data-detail-add>Add to cart</button>
       </div>
       <a class="button button--whatsapp button--full" href="https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(`Assalamu Alaikum, I want to know more about ${product.name}.`)}" target="_blank" rel="noopener">Ask on WhatsApp</a>
       <div class="assurance-row"><span>✓ Secure packing</span><span>✓ Shipping across India</span><span>✓ WhatsApp support</span></div>
     </div>`;
 
-  container.querySelector("[data-detail-add]").addEventListener("click", () => {
+  const detailAddButton = container.querySelector("[data-detail-add]");
+  if (detailAddButton) detailAddButton.addEventListener("click", () => {
     addToCart(product.id, container.querySelector("#product-quantity").value);
   });
 
@@ -251,7 +266,9 @@ function renderCartPage() {
   const checkout = document.querySelector("[data-checkout-section]");
 
   function draw() {
-    const cart = getCart().filter(item => findProduct(item.id));
+    const cart = getCart()
+      .filter(item => findProduct(item.id) && findProduct(item.id).quantity > 0)
+      .map(item => ({ ...item, quantity: Math.min(item.quantity, findProduct(item.id).quantity) }));
     saveCart(cart);
 
     if (!cart.length) {
@@ -276,7 +293,7 @@ function renderCartPage() {
             <strong>${formatPrice(product.price)}</strong>
             <div class="cart-item__actions">
               <label for="qty-${product.id}">Qty</label>
-              <select id="qty-${product.id}" data-cart-quantity="${product.id}">${[1,2,3,4,5,6,7,8,9,10].map(value => `<option ${value === item.quantity ? "selected" : ""}>${value}</option>`).join("")}</select>
+              <select id="qty-${product.id}" data-cart-quantity="${product.id}">${Array.from({length: Math.min(product.quantity, 10)}, (_, index) => index + 1).map(value => `<option ${value === item.quantity ? "selected" : ""}>${value}</option>`).join("")}</select>
               <button class="text-button" type="button" data-remove-item="${product.id}">Remove</button>
             </div>
           </div>

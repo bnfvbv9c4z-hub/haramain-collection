@@ -156,5 +156,55 @@ const products = [
   }
 ];
 
-// Make the catalogue accessible to main.js when pages are opened directly.
-window.HARAMAIN_PRODUCTS = products;
+// Give the original catalogue a starting stock quantity. These records remain
+// available as a fallback until Supabase is connected.
+const fallbackProducts = products.map(product => ({
+  ...product,
+  quantity: Number.isInteger(product.quantity) ? product.quantity : 10,
+  active: product.active !== false
+}));
+
+function normaliseProduct(row) {
+  return {
+    id: Number(row.id),
+    name: row.name,
+    category: row.category,
+    price: Number(row.price),
+    oldPrice: row.old_price == null ? null : Number(row.old_price),
+    image: row.image_url || "images/placeholder-quran.svg",
+    alt: row.alt_text || row.name,
+    badge: row.badge || "",
+    featured: Boolean(row.featured),
+    description: row.description || "",
+    details: Array.isArray(row.details) ? row.details : [],
+    quantity: Math.max(0, Number(row.quantity) || 0),
+    active: row.active !== false
+  };
+}
+
+// Public pages call this function. If Supabase is not configured or is briefly
+// unavailable, customers still see the fallback catalogue instead of a blank shop.
+window.getHaramainProducts = async function getHaramainProducts() {
+  const backend = window.HARAMAIN_BACKEND;
+  if (!backend || !backend.isConfigured()) return fallbackProducts;
+
+  try {
+    const response = await fetch(
+      `${backend.url}/rest/v1/products?select=*&active=eq.true&order=created_at.desc`,
+      {
+        headers: {
+          apikey: backend.anonKey,
+          Authorization: `Bearer ${backend.anonKey}`
+        }
+      }
+    );
+    if (!response.ok) throw new Error(`Product request failed: ${response.status}`);
+    const rows = await response.json();
+    return rows.length ? rows.map(normaliseProduct) : fallbackProducts;
+  } catch (error) {
+    console.warn("Using the local product catalogue because Supabase is unavailable.", error);
+    return fallbackProducts;
+  }
+};
+
+window.HARAMAIN_PRODUCTS = fallbackProducts;
