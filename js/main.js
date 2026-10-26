@@ -63,7 +63,10 @@ function applyStoreSettings(settings) {
 
   const hero = document.querySelector(".hero");
   if (hero) {
-    if (settings.heroImageUrl) hero.style.setProperty("--hero-image", `url("${String(settings.heroImageUrl).replace(/["\\]/g, "")}")`);
+    if (settings.heroImageUrl) {
+      const heroImageUrl = new URL(String(settings.heroImageUrl).replace(/["\\]/g, ""), document.baseURI).href;
+      hero.style.setProperty("--hero-image", `url("${heroImageUrl}")`);
+    }
     const eyebrow = hero.querySelector(".eyebrow");
     const title = hero.querySelector("h1");
     const copy = hero.querySelector(".hero__copy");
