@@ -208,3 +208,82 @@ window.getHaramainProducts = async function getHaramainProducts() {
 };
 
 window.HARAMAIN_PRODUCTS = fallbackProducts;
+
+window.HARAMAIN_DEFAULT_SETTINGS = {
+  storeName: "Haramain Collection",
+  announcementText: "FREE GIFT PACKING ON ORDERS ABOVE ₹1,499 · ORDER ON WHATSAPP",
+  announcementEnabled: true,
+  heroEyebrow: "Faith · Fragrance · Gifting",
+  heroTitle: "Thoughtful treasures for sacred moments.",
+  heroCopy: "Discover Islamic gifts, beautiful home fragrances and trusted Hajj and Umrah essentials—chosen with care for your family and every meaningful occasion.",
+  heroNote: "Easy WhatsApp ordering · Secure packing · Delivery across India",
+  heroPrimaryLabel: "Explore collection",
+  heroPrimaryLink: "shop.html",
+  heroImageUrl: "WhatsApp Image 2026-09-27 at 3.27.53 PM.jpeg",
+  primaryColor: "#718c72",
+  primaryDarkColor: "#34473a",
+  accentColor: "#9a8265",
+  backgroundColor: "#faf8f2",
+  whatsapp: "919303081471",
+  upiId: "yourname@upi",
+  footerCopy: "Islamic essentials, fragrances and meaningful gifts—carefully chosen for homes and sacred journeys.",
+  shippingNote: "Shipping and final stock availability will be confirmed on WhatsApp."
+};
+
+function normaliseSettings(row = {}) {
+  const defaults = window.HARAMAIN_DEFAULT_SETTINGS;
+  return {
+    storeName: row.store_name || defaults.storeName,
+    announcementText: row.announcement_text || defaults.announcementText,
+    announcementEnabled: row.announcement_enabled !== false,
+    heroEyebrow: row.hero_eyebrow || defaults.heroEyebrow,
+    heroTitle: row.hero_title || defaults.heroTitle,
+    heroCopy: row.hero_copy || defaults.heroCopy,
+    heroNote: row.hero_note || defaults.heroNote,
+    heroPrimaryLabel: row.hero_primary_label || defaults.heroPrimaryLabel,
+    heroPrimaryLink: row.hero_primary_link || defaults.heroPrimaryLink,
+    heroImageUrl: row.hero_image_url || defaults.heroImageUrl,
+    primaryColor: row.primary_color || defaults.primaryColor,
+    primaryDarkColor: row.primary_dark_color || defaults.primaryDarkColor,
+    accentColor: row.accent_color || defaults.accentColor,
+    backgroundColor: row.background_color || defaults.backgroundColor,
+    whatsapp: row.whatsapp_number || defaults.whatsapp,
+    upiId: row.upi_id || defaults.upiId,
+    footerCopy: row.footer_copy || defaults.footerCopy,
+    shippingNote: row.shipping_note || defaults.shippingNote
+  };
+}
+
+window.getHaramainStoreData = async function getHaramainStoreData() {
+  const backend = window.HARAMAIN_BACKEND;
+  const fallback = { settings: window.HARAMAIN_DEFAULT_SETTINGS, coupons: [] };
+  if (!backend || !backend.isConfigured()) return fallback;
+  const headers = { apikey: backend.anonKey, Authorization: `Bearer ${backend.anonKey}` };
+  try {
+    const [settingsResponse, couponsResponse] = await Promise.all([
+      fetch(`${backend.url}/rest/v1/store_settings?select=*&id=eq.1&limit=1`, { headers }),
+      fetch(`${backend.url}/rest/v1/coupons?select=*&active=eq.true&order=priority.desc`, { headers })
+    ]);
+    if (!settingsResponse.ok || !couponsResponse.ok) throw new Error("Store data request failed");
+    const settingsRows = await settingsResponse.json();
+    const couponRows = await couponsResponse.json();
+    const now = Date.now();
+    const coupons = couponRows.filter(coupon =>
+      coupon.auto_apply &&
+      (!coupon.starts_at || new Date(coupon.starts_at).getTime() <= now) &&
+      (!coupon.ends_at || new Date(coupon.ends_at).getTime() >= now)
+    ).map(coupon => ({
+      id: Number(coupon.id),
+      code: coupon.code,
+      label: coupon.label,
+      discountPercent: Number(coupon.discount_percent),
+      minCartValue: Number(coupon.min_cart_value),
+      minItems: Number(coupon.min_items),
+      priority: Number(coupon.priority) || 0
+    }));
+    return { settings: normaliseSettings(settingsRows[0]), coupons };
+  } catch (error) {
+    console.warn("Using fallback storefront settings.", error);
+    return fallback;
+  }
+};

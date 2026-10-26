@@ -6,11 +6,12 @@ The website is built with plain HTML, CSS and JavaScript. It does not require np
 
 ## Pages
 
-- Home page with hero, collections, featured products, reviews and FAQ
+- Home page with a backend-controlled hero, announcement, collections, featured products, reviews and FAQ
 - Shop page with the complete product catalogue
 - Dynamic product detail page
 - Working shopping cart saved in the browser
-- WhatsApp checkout form
+- Automatic coupon progress and discount calculation
+- Business WhatsApp checkout form
 - About, contact and store policy pages
 
 ## Project structure
@@ -29,12 +30,16 @@ js/products.js      Product catalogue data
 js/main.js          Navigation, cart and page functionality
 js/admin.js         Supabase admin and image upload functionality
 supabase/schema.sql Database tables, storage and security rules
+supabase/backoffice.sql Dynamic storefront and coupon tables
+supabase/seed-products.sql One-time import of the original 12 products
 images/             Logo, icons and placeholder artwork
 ```
 
 ## Product dashboard
 
 The store is connected to Supabase for products, images, categories, prices and stock quantities. Open `/admin.html` and sign in with the approved owner account. Quantity `0` automatically displays **Out of stock** and disables cart ordering for that item.
+
+The same backoffice also manages the top announcement, hero copy and image, website colour theme, Business WhatsApp, UPI ID, footer, shipping note and automatic coupons. Coupon rules support a minimum cart value, minimum item count, percentage discount and priority. The customer sees live progress and the best eligible offer is applied automatically.
 
 See `BACKEND_SETUP.md` for the one-time connection and recovery steps. Never commit a Supabase service-role key; the browser configuration uses only the public publishable key.
 
@@ -54,7 +59,7 @@ Use `admin.html` for normal product and inventory updates. `js/products.js` is t
 
 ## Before accepting real orders
 
-- Replace the placeholder WhatsApp number in `js/main.js`
+- Business WhatsApp is configured in `js/main.js`
 - Replace the placeholder UPI ID and QR code
 - Confirm product prices, stock and shipping terms
 - Add the final domain to the page metadata after deployment

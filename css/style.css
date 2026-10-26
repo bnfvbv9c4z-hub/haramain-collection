@@ -28,6 +28,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { margin: 0; overflow-x: hidden; color: var(--ink); background: var(--cream-light); font-family: var(--sans); font-size: 16px; line-height: 1.65; }
 body.menu-open { overflow: hidden; }
@@ -81,7 +82,7 @@ textarea { min-height: 120px; resize: vertical; }
 .form-grid { display: grid; gap: 0 16px; }
 
 /* ---------- 3. Announcement and header ---------- */
-.announcement { min-height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 6px 12px; color: var(--cream); background: var(--maroon-dark); font-size: .7rem; font-weight: 700; letter-spacing: .04em; text-align: center; white-space: nowrap; }
+.announcement { min-height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 6px 12px; color: var(--cream); background: var(--maroon-dark); font-size: .7rem; font-weight: 700; letter-spacing: .04em; line-height: 1.35; text-align: center; }
 .site-header { position: sticky; z-index: 100; top: 0; border-bottom: 1px solid rgba(184, 148, 74, .25); background: rgba(255, 250, 240, .98); box-shadow: 0 4px 20px rgba(61, 14, 23, .05); }
 .header-inner { min-height: 72px; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; }
 .brand { min-width: 0; display: inline-flex; align-items: center; justify-self: center; color: var(--maroon); font-family: var(--serif); font-size: 1.25rem; font-weight: 700; letter-spacing: 0; white-space: nowrap; }
@@ -101,10 +102,10 @@ textarea { min-height: 120px; resize: vertical; }
 
 /* ---------- 4. Hero and page banners ---------- */
 .hero { position: relative; min-height: 660px; display: grid; align-items: end; overflow: hidden; color: white; background: var(--maroon-dark); }
-.hero::before { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, rgba(31, 49, 37, .1), rgba(32, 51, 39, .88)), url("../WhatsApp Image 2026-09-27 at 3.27.53 PM.jpeg") center 42% / cover; }
+.hero::before { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, rgba(31, 49, 37, .1), rgba(32, 51, 39, .88)), var(--hero-image, url("../WhatsApp Image 2026-09-27 at 3.27.53 PM.jpeg")) center 42% / cover; }
 .hero::after { position: absolute; inset: 16px; border: 1px solid rgba(215, 188, 128, .48); border-radius: 240px 240px 24px 24px; content: ""; pointer-events: none; }
 .hero__content { position: relative; z-index: 1; max-width: 760px; padding: 160px 0 66px; }
-.hero h1 { color: var(--cream); text-wrap: balance; }
+.hero h1 { color: var(--cream); font-weight: 700; letter-spacing: -.02em; text-shadow: 0 3px 24px rgba(13, 25, 17, .3); text-wrap: balance; }
 .hero .eyebrow { color: var(--gold-light); }
 .hero__copy { max-width: 600px; color: #f2f4ef; font-size: 1.06rem; }
 .hero__note { margin-top: 20px; color: var(--gold-light); font-size: .82rem; }
@@ -183,6 +184,9 @@ textarea { min-height: 120px; resize: vertical; }
 .order-summary { align-self: start; padding: 24px; border-radius: var(--radius); background: var(--cream); }
 .summary-row { display: flex; justify-content: space-between; gap: 20px; padding: 10px 0; }
 .summary-row--total { margin-top: 8px; border-top: 1px solid var(--gold-light); color: var(--maroon); font-size: 1.18rem; }
+.summary-row--discount { color: var(--success); }
+.coupon-progress { margin: 12px 0; padding: 13px 14px; border: 1px solid var(--gold-light); border-radius: 12px; color: var(--maroon-dark); background: rgba(255, 255, 255, .72); font-size: .86rem; font-weight: 700; }
+.coupon-progress.is-applied { border-color: #a8c9ad; color: #2d633a; background: #e9f5eb; }
 .checkout-grid { display: grid; gap: 24px; }
 .checkout-card { padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); background: white; box-shadow: var(--shadow-sm); }
 .upi-card { text-align: center; background: var(--cream); }
@@ -208,6 +212,10 @@ textarea { min-height: 120px; resize: vertical; }
 .admin-login__card { width: min(100%, 460px); padding: 30px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: white; box-shadow: var(--shadow-lg); }
 .admin-title-row { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 20px; padding: 55px 0 28px; }
 .admin-title-row h1 { font-size: clamp(2.4rem, 8vw, 4rem); }
+.admin-tabs { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 24px; padding: 5px; border: 1px solid var(--border); border-radius: 999px; background: rgba(255, 255, 255, .7); }
+.admin-tabs button { min-width: 112px; min-height: 44px; flex: 1 0 auto; padding: 8px 18px; border: 0; border-radius: 999px; color: var(--muted); background: transparent; font-weight: 700; }
+.admin-tabs button.is-active { color: white; background: var(--maroon); box-shadow: var(--shadow-sm); }
+.admin-view[hidden] { display: none; }
 .admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
 .admin-stats article { padding: 18px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: white; box-shadow: var(--shadow-sm); }
 .admin-stats span { display: block; color: var(--muted); font-size: .72rem; }
@@ -220,6 +228,11 @@ textarea { min-height: 120px; resize: vertical; }
 .admin-checks label { display: flex; align-items: center; gap: 10px; }
 .admin-checks input { width: 22px; min-height: 22px; }
 .admin-image-preview { width: 110px; height: 110px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
+.admin-hero-preview { width: 100%; max-height: 230px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
+.admin-fieldset { margin: 8px 0 22px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; }
+.admin-fieldset legend { padding-inline: 8px; color: var(--maroon-dark); font-family: var(--serif); font-size: 1.35rem; font-weight: 700; }
+.admin-colour-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.admin-colour-grid input { height: 48px; padding: 4px; }
 .admin-search { width: min(100%, 240px); }
 .admin-product-list { display: grid; gap: 12px; }
 [data-import-products] { margin-bottom: 18px; }
@@ -230,6 +243,11 @@ textarea { min-height: 120px; resize: vertical; }
 .admin-product p { margin-bottom: 6px; }
 .admin-product__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .admin-product__actions .button { min-height: 40px; padding: 6px 14px; }
+.admin-coupon-list { display: grid; gap: 12px; }
+.admin-coupon { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--cream-light); }
+.admin-coupon.is-hidden { opacity: .62; }
+.admin-coupon h3, .admin-coupon p { margin-bottom: 4px; }
+.admin-form-wide { max-width: 900px; margin-inline: auto; }
 .form-message { min-height: 24px; margin: 10px 0 0; color: var(--success); font-weight: 700; }
 .form-message.is-error { color: #a03f3f; }
 
@@ -283,7 +301,7 @@ textarea { min-height: 120px; resize: vertical; }
 @media (max-width: 420px) {
   .hero .button-group { display: grid; }
   .hero .button { width: 100%; }
-  .hero__content { padding-bottom: 45px; }
+  .hero__content { padding: 150px 12px 54px; }
   .hero__note { font-size: .75rem; }
   .page-hero { padding-inline: 4px; }
   .policy-section { padding: 22px 20px; }
@@ -302,7 +320,7 @@ textarea { min-height: 120px; resize: vertical; }
   .site-nav a { min-height: 44px; border: 0; font-family: var(--sans); font-size: .88rem; }
   .site-nav a:hover { color: var(--gold); }
   .hero { min-height: calc(100vh - 118px); align-items: center; }
-  .hero::before { background: linear-gradient(90deg, rgba(31, 48, 37, .92) 0%, rgba(45, 70, 54, .58) 48%, rgba(31, 49, 37, .1) 80%), url("../WhatsApp Image 2026-09-27 at 3.27.53 PM.jpeg") center 40% / cover; }
+  .hero::before { background: linear-gradient(90deg, rgba(31, 48, 37, .92) 0%, rgba(45, 70, 54, .58) 48%, rgba(31, 49, 37, .1) 80%), var(--hero-image, url("../WhatsApp Image 2026-09-27 at 3.27.53 PM.jpeg")) center 40% / cover; }
   .hero::after { inset: 28px; border-radius: 280px 280px 28px 28px; }
   .hero__content { padding: 90px 0; }
   .hero__copy { font-size: 1.15rem; }

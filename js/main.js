@@ -1,17 +1,25 @@
 /* Haramain Collection — shared site behaviour */
 
 const STORE = {
-  whatsapp: "919999999999", // Replace with your WhatsApp number: country code + number, no + or spaces.
+  whatsapp: "919303081471", // Business WhatsApp: country code + number, without + or spaces.
   upiId: "yourname@upi", // Replace with your real UPI ID.
-  cartKey: "haramainCollectionCart"
+  cartKey: "haramainCollectionCart",
+  shippingNote: "Shipping and final stock availability will be confirmed on WhatsApp."
 };
 
 let catalogue = window.HARAMAIN_PRODUCTS || [];
+let activeCoupons = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupMobileMenu();
   updateCartBadges();
-  if (window.getHaramainProducts) catalogue = await window.getHaramainProducts();
+  const [products, storeData] = await Promise.all([
+    window.getHaramainProducts ? window.getHaramainProducts() : catalogue,
+    window.getHaramainStoreData ? window.getHaramainStoreData() : { settings: window.HARAMAIN_DEFAULT_SETTINGS || {}, coupons: [] }
+  ]);
+  catalogue = products;
+  activeCoupons = storeData.coupons || [];
+  applyStoreSettings(storeData.settings || {});
   renderFeaturedProducts();
   setupShop();
   renderProductPage();
@@ -23,12 +31,88 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /* ---------- Shared helpers ---------- */
+function applyStoreSettings(settings) {
+  Object.assign(STORE, {
+    whatsapp: settings.whatsapp || STORE.whatsapp,
+    upiId: settings.upiId || STORE.upiId,
+    shippingNote: settings.shippingNote || STORE.shippingNote
+  });
+
+  document.querySelectorAll(".brand span").forEach(node => {
+    node.textContent = settings.storeName || "Haramain Collection";
+  });
+  document.querySelectorAll(".announcement").forEach(node => {
+    node.textContent = settings.announcementText || "";
+    node.hidden = settings.announcementEnabled === false;
+  });
+  document.querySelectorAll(".footer-brand > p").forEach(node => {
+    if (settings.footerCopy) node.textContent = settings.footerCopy;
+  });
+
+  const themeColours = {
+    "--maroon": settings.primaryColor,
+    "--maroon-dark": settings.primaryDarkColor,
+    "--gold": settings.accentColor,
+    "--cream-light": settings.backgroundColor
+  };
+  Object.entries(themeColours).forEach(([property, value]) => {
+    if (value) document.documentElement.style.setProperty(property, value);
+  });
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeMeta && settings.primaryColor) themeMeta.content = settings.primaryColor;
+
+  const hero = document.querySelector(".hero");
+  if (hero) {
+    if (settings.heroImageUrl) hero.style.setProperty("--hero-image", `url("${String(settings.heroImageUrl).replace(/["\\]/g, "")}")`);
+    const eyebrow = hero.querySelector(".eyebrow");
+    const title = hero.querySelector("h1");
+    const copy = hero.querySelector(".hero__copy");
+    const note = hero.querySelector(".hero__note");
+    const primary = hero.querySelector(".button-group .button:first-child");
+    if (eyebrow && settings.heroEyebrow) eyebrow.textContent = settings.heroEyebrow;
+    if (title && settings.heroTitle) title.textContent = settings.heroTitle;
+    if (copy && settings.heroCopy) copy.textContent = settings.heroCopy;
+    if (note && settings.heroNote) note.textContent = settings.heroNote;
+    if (primary) {
+      if (settings.heroPrimaryLabel) primary.textContent = settings.heroPrimaryLabel;
+      if (settings.heroPrimaryLink) primary.href = settings.heroPrimaryLink;
+    }
+  }
+}
+
 function formatPrice(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function getCouponState(cart, subtotal) {
+  const itemCount = cart.reduce((total, item) => total + Number(item.quantity), 0);
+  const eligible = activeCoupons
+    .filter(coupon => subtotal >= coupon.minCartValue && itemCount >= coupon.minItems)
+    .sort((a, b) => ((subtotal * b.discountPercent) - (subtotal * a.discountPercent)) || b.priority - a.priority);
+  const applied = eligible[0] || null;
+  const upcoming = activeCoupons
+    .filter(coupon => !eligible.includes(coupon))
+    .map(coupon => ({
+      coupon,
+      missingValue: Math.max(0, coupon.minCartValue - subtotal),
+      missingItems: Math.max(0, coupon.minItems - itemCount)
+    }))
+    .sort((a, b) => (a.missingValue + a.missingItems * 100) - (b.missingValue + b.missingItems * 100))[0] || null;
+  const discount = applied ? Math.round(subtotal * applied.discountPercent / 100) : 0;
+  return { itemCount, applied, upcoming, discount, total: Math.max(0, subtotal - discount) };
+}
+
+function couponProgressMessage(state) {
+  if (state.applied) return `${state.applied.code} applied automatically — you saved ${formatPrice(state.discount)} (${state.applied.discountPercent}% off).`;
+  if (!state.upcoming) return "";
+  const parts = [];
+  if (state.upcoming.missingItems) parts.push(`${state.upcoming.missingItems} more item${state.upcoming.missingItems === 1 ? "" : "s"}`);
+  if (state.upcoming.missingValue) parts.push(`${formatPrice(state.upcoming.missingValue)} more`);
+  return `Add ${parts.join(" and ")} to unlock ${state.upcoming.coupon.discountPercent}% off automatically.`;
 }
 
 function getCart() {
@@ -302,8 +386,23 @@ function renderCartPage() {
     }).join("");
 
     const subtotal = cart.reduce((total, item) => total + findProduct(item.id).price * item.quantity, 0);
+    const couponState = getCouponState(cart, subtotal);
     document.querySelector("[data-cart-subtotal]").textContent = formatPrice(subtotal);
-    document.querySelector("[data-cart-total]").textContent = formatPrice(subtotal);
+    document.querySelector("[data-cart-total]").textContent = formatPrice(couponState.total);
+    const couponMessage = document.querySelector("[data-coupon-message]");
+    const discountRow = document.querySelector("[data-cart-discount-row]");
+    if (couponMessage) {
+      couponMessage.textContent = couponProgressMessage(couponState);
+      couponMessage.hidden = !couponMessage.textContent;
+      couponMessage.classList.toggle("is-applied", Boolean(couponState.applied));
+    }
+    if (discountRow) {
+      discountRow.hidden = !couponState.applied;
+      const code = discountRow.querySelector("[data-coupon-code]");
+      const value = discountRow.querySelector("[data-cart-discount]");
+      if (code) code.textContent = couponState.applied ? `Discount (${couponState.applied.code})` : "Discount";
+      if (value) value.textContent = `−${formatPrice(couponState.discount)}`;
+    }
 
     itemsContainer.querySelectorAll("[data-cart-quantity]").forEach(select => {
       select.addEventListener("change", () => {
@@ -334,14 +433,17 @@ function renderCartPage() {
       const product = findProduct(item.id);
       return `• ${product.name} × ${item.quantity} — ${formatPrice(product.price * item.quantity)}`;
     });
-    const total = cart.reduce((sum, item) => sum + findProduct(item.id).price * item.quantity, 0);
+    const subtotal = cart.reduce((sum, item) => sum + findProduct(item.id).price * item.quantity, 0);
+    const couponState = getCouponState(cart, subtotal);
     const message = [
       "Assalamu Alaikum, I would like to place an order from Haramain Collection.",
       "",
       ...lines,
       "",
-      `Total: ${formatPrice(total)}`,
-      "Shipping: To be confirmed on WhatsApp",
+      `Subtotal: ${formatPrice(subtotal)}`,
+      couponState.applied ? `Discount (${couponState.applied.code}, ${couponState.applied.discountPercent}%): -${formatPrice(couponState.discount)}` : "",
+      `Total: ${formatPrice(couponState.total)}`,
+      STORE.shippingNote,
       "",
       `Name: ${data.get("name")}`,
       `Phone: ${data.get("phone")}`,

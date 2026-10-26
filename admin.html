@@ -44,7 +44,15 @@
     </section>
 
     <section data-admin-dashboard hidden>
-      <div class="admin-title-row"><div><p class="eyebrow">Store control</p><h1>Products & inventory</h1><p>Add products, upload photos and keep stock accurate.</p></div><button class="button" type="button" data-new-product>+ Add product</button></div>
+      <div class="admin-title-row"><div><p class="eyebrow">Store control</p><h1>Haramain Backoffice</h1><p>Manage products, stock, storefront content, WhatsApp and automatic offers.</p></div><button class="button" type="button" data-new-product>+ Add product</button></div>
+
+      <nav class="admin-tabs" aria-label="Backoffice sections">
+        <button class="is-active" type="button" data-admin-tab="products">Products</button>
+        <button type="button" data-admin-tab="storefront">Storefront</button>
+        <button type="button" data-admin-tab="coupons">Coupons</button>
+      </nav>
+
+      <section class="admin-view" data-admin-view="products">
 
       <div class="admin-stats" aria-label="Inventory summary">
         <article><span>Total products</span><strong data-stat-total>0</strong></article>
@@ -82,6 +90,69 @@
           <div class="admin-product-list" data-admin-products><p>Loading products…</p></div>
         </section>
       </div>
+      </section>
+
+      <section class="admin-view" data-admin-view="storefront" hidden>
+        <div class="admin-panel admin-form-wide">
+          <div class="admin-panel__heading"><div><p class="eyebrow">Live website content</p><h2>Storefront settings</h2><p>Changes appear across the website after saving.</p></div></div>
+          <form data-settings-form>
+            <div class="form-grid">
+              <div class="form-group"><label for="setting-store-name">Store name</label><input id="setting-store-name" name="store_name" required></div>
+              <div class="form-group"><label for="setting-whatsapp">Business WhatsApp</label><input id="setting-whatsapp" name="whatsapp_number" inputmode="numeric" placeholder="919303081471" required></div>
+            </div>
+            <div class="admin-checks"><label><input name="announcement_enabled" type="checkbox"> Show top announcement</label></div>
+            <div class="form-group"><label for="setting-announcement">Top announcement message</label><input id="setting-announcement" name="announcement_text" required></div>
+            <div class="form-grid">
+              <div class="form-group"><label for="setting-hero-eyebrow">Hero small heading</label><input id="setting-hero-eyebrow" name="hero_eyebrow"></div>
+              <div class="form-group"><label for="setting-hero-title">Hero main heading</label><input id="setting-hero-title" name="hero_title" required></div>
+            </div>
+            <div class="form-group"><label for="setting-hero-copy">Hero description</label><textarea id="setting-hero-copy" name="hero_copy"></textarea></div>
+            <div class="form-group"><label for="setting-hero-note">Hero assurance line</label><input id="setting-hero-note" name="hero_note"></div>
+            <div class="form-group"><label for="setting-hero-image">Hero background image</label><input id="setting-hero-image" name="hero_image" type="file" accept="image/jpeg,image/png,image/webp"><input name="current_hero_image_url" type="hidden"><small>Optional. JPG, PNG or WebP, maximum 5 MB.</small><img class="admin-hero-preview" data-hero-preview alt="Current hero background preview" hidden></div>
+            <div class="form-grid">
+              <div class="form-group"><label for="setting-cta-label">Main button label</label><input id="setting-cta-label" name="hero_primary_label"></div>
+              <div class="form-group"><label for="setting-cta-link">Main button link</label><input id="setting-cta-link" name="hero_primary_link" placeholder="shop.html"></div>
+              <div class="form-group"><label for="setting-upi">UPI ID</label><input id="setting-upi" name="upi_id"></div>
+            </div>
+            <fieldset class="admin-fieldset"><legend>Website colours</legend><div class="admin-colour-grid">
+              <label>Primary sage<input name="primary_color" type="color" value="#718c72"></label>
+              <label>Dark green<input name="primary_dark_color" type="color" value="#34473a"></label>
+              <label>Accent beige<input name="accent_color" type="color" value="#9a8265"></label>
+              <label>Page background<input name="background_color" type="color" value="#faf8f2"></label>
+            </div></fieldset>
+            <div class="form-group"><label for="setting-footer">Footer description</label><textarea id="setting-footer" name="footer_copy"></textarea></div>
+            <div class="form-group"><label for="setting-shipping">Checkout shipping note</label><input id="setting-shipping" name="shipping_note"></div>
+            <button class="button" type="submit">Save storefront settings</button>
+            <p class="form-message" data-settings-message role="status"></p>
+          </form>
+        </div>
+      </section>
+
+      <section class="admin-view" data-admin-view="coupons" hidden>
+        <div class="admin-workspace">
+          <section class="admin-panel admin-editor">
+            <div class="admin-panel__heading"><div><p class="eyebrow">Automatic offers</p><h2 data-coupon-title>Create coupon</h2></div><button class="text-button" type="button" data-cancel-coupon hidden>Cancel edit</button></div>
+            <form data-coupon-form>
+              <input type="hidden" name="id">
+              <div class="form-grid">
+                <div class="form-group"><label for="coupon-code">Coupon code</label><input id="coupon-code" name="code" maxlength="24" placeholder="WELCOME5" required></div>
+                <div class="form-group"><label for="coupon-label">Offer name</label><input id="coupon-label" name="label" placeholder="Welcome offer" required></div>
+                <div class="form-group"><label for="coupon-percent">Discount %</label><input id="coupon-percent" name="discount_percent" type="number" min="0.1" max="100" step="0.1" required></div>
+                <div class="form-group"><label for="coupon-value">Minimum cart ₹</label><input id="coupon-value" name="min_cart_value" type="number" min="0" step="1" value="0" required></div>
+                <div class="form-group"><label for="coupon-items">Minimum items</label><input id="coupon-items" name="min_items" type="number" min="0" step="1" value="0" required></div>
+                <div class="form-group"><label for="coupon-priority">Priority</label><input id="coupon-priority" name="priority" type="number" step="1" value="0"></div>
+              </div>
+              <div class="admin-checks"><label><input name="auto_apply" type="checkbox" checked> Apply automatically</label><label><input name="active" type="checkbox"> Active on live store</label></div>
+              <button class="button button--full" type="submit">Save coupon</button>
+              <p class="form-message" data-coupon-message-admin role="status"></p>
+            </form>
+          </section>
+          <section class="admin-panel">
+            <div class="admin-panel__heading"><div><p class="eyebrow">Offers</p><h2>Coupon rules</h2></div></div>
+            <div class="admin-coupon-list" data-admin-coupons><p>Loading coupons…</p></div>
+          </section>
+        </div>
+      </section>
     </section>
   </main>
 </body>

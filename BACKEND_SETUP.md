@@ -15,6 +15,7 @@ The code is ready. This one-time setup connects it to a free Supabase project.
 1. In Supabase, open **SQL Editor**.
 2. Click **New query**.
 3. Copy everything from `supabase/schema.sql`, paste it there, and click **Run**.
+4. Create another query, copy `supabase/backoffice.sql`, and click **Run**. This adds dynamic storefront settings and coupon rules.
 
 ## 3. Create the private owner login
 
@@ -41,6 +42,10 @@ Only this approved user can add or edit products. Do not enable public sign-ups.
 ## 5. Use the dashboard
 
 Open `admin.html` and sign in. The first time, click **Import the 12 current products** so the existing catalogue moves into Supabase. After that, add and edit everything from this dashboard. For each product you can upload a photo, choose a category, enter prices and quantity, feature it on the home page, or hide it from the shop.
+
+The **Storefront** tab controls the top announcement, home hero text and image, website colours, Business WhatsApp number, UPI ID, footer description and checkout note. The **Coupons** tab controls automatic discounts. A coupon can require both a minimum cart value and minimum number of items; the cart tells customers exactly how much or how many items remain, then applies the best eligible offer automatically.
+
+The included `WELCOME5` example is deliberately inactive. Review its rules in the backoffice before turning on **Active on live store**.
 
 Quantity `0` automatically shows **Out of stock** and disables Add to cart. The **−1 stock** and **+1 stock** buttons make quick inventory corrections easy.
 
